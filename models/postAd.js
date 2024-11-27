@@ -1,5 +1,5 @@
 const mysql = require('mysql2/promise');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const config = require('../config.js');
 
 class PostAd {
@@ -90,7 +90,7 @@ class PostAd {
         } finally {
             await connection.end();
         }
-        
+
     }
 
     async queryAll() {

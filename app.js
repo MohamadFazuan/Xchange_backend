@@ -176,6 +176,24 @@ app.post('/postAd/querybyExchange', async (req, res) => {
   }
 });
 
+app.get('/postAd/querybyId/', async (req, res) => {
+  var id = req.query.id
+
+  try {
+    const post = new PostAd();
+    const query = await post.queryById(id);
+    
+    if (query) {
+      res.status(201).json(query);
+    } else {
+      res.status(500).send({ message: 'Failed to find ad' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: error });
+  }
+});
+
 app.get('/friends/queryAll', async (req, res) => {
 
   try {
@@ -195,4 +213,4 @@ app.get('/friends/queryAll', async (req, res) => {
 
 app.listen(3000, () => {
   console.log('Server listening on port 3000');
-});2
+});

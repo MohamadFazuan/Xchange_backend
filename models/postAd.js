@@ -90,7 +90,7 @@ class PostAd {
         } finally {
             await connection.end();
         }
-
+        
     }
 
     async queryAll() {
@@ -117,7 +117,6 @@ class PostAd {
         } finally {
             await connection.end();
         }
-
     }
 
     async queryByExchange(fromCurrency, toCurrency) {
@@ -129,10 +128,11 @@ class PostAd {
             database: config.db.database
         });
 
-        const query = `SELECT * FROM post WHERE from_currency = ${fromCurrency} AND to_currency = ${toCurrency}`;
+        const query = `SELECT * FROM post WHERE from_currency = ? AND to_currency = ?`;
+        const values = [fromCurrency, toCurrency];
 
         try {
-            const [rows] = await connection.execute(query);
+            const [rows] = await connection.execute(query, values);
             if (rows.length === 0) {
                 return null;
             }
@@ -144,7 +144,34 @@ class PostAd {
         } finally {
             await connection.end();
         }
+    }
 
+    // New method to query a post by ID
+    async queryById(id) {
+        const connection = await mysql.createConnection({
+            host: config.db.host,
+            port: config.db.port,
+            user: config.db.user,
+            password: config.db.password,
+            database: config.db.database
+        });
+
+        const query = `SELECT * FROM post WHERE id = ?`;
+        const values = [id];
+
+        try {
+            const [rows] = await connection.execute(query, values);
+            if (rows.length === 0) {
+                return null; // No post found with the given ID
+            }
+
+            return rows[0]; // Return the first row (the post)
+        } catch (error) {
+            console.error(error);
+            return false;
+        } finally {
+            await connection.end();
+        }
     }
 }
 

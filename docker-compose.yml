@@ -23,6 +23,10 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 3306:3306
+    env_file:
+      - .env.development  # Load environment variables from .env file
     volumes:
       - db-data:/var/lib/mysql
     networks:

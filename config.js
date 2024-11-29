@@ -1,20 +1,22 @@
+require('dotenv').config(); // Load environment variables from .env
+
 module.exports = {
   db: {
-    host: localhost,
-    port: 3306,
-    user: 'root',
-    password: 'password',
-    database: 'userdata'
+    host: process.env.DB_HOST || 'localhost',  // 'db' will work in Docker
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'password',
+    database: process.env.DB_NAME || 'mydb'
   },
   jwt: {
-    secret: 'xchange',
-    expires: '1h'
+    secret: process.env.JWT_SECRET || 'defaultSecret',
+    expires: process.env.JWT_EXPIRES || '1h'
   },
   bcrypt: {
-    saltRounds: 10,
-    password: 'xchange'
+    saltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10,
+    password: process.env.BCRYPT_PASSWORD || 'defaultPassword'
   },
-  rate:{
-    apiKey: "d3a701e5289298041b2e6670"
+  rate: {
+    apiKey: process.env.RATE_API_KEY || 'defaultApiKey'
   }
 };

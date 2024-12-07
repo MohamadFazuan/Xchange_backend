@@ -184,7 +184,7 @@ app.get('/postAd/querybyId/', async (req, res) => {
     const query = await post.queryById(id);
     
     if (query) {
-      res.status(201).json(query);
+      res.status(200).json(query);
     } else {
       res.status(500).send({ message: 'Failed to find ad' });
     }

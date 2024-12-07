@@ -1,178 +1,134 @@
 const mysql = require('mysql2/promise');
-const bcrypt = require('bcryptjs');
 const config = require('../config.js');
 
 class PostAd {
+  constructor() {
+    this.connection = null; // Initialize a connection holder
+  }
 
-    async add(
-        fromCurrency,
-        fromAmount,
-        toCurrency,
-        toAmount,
-        name,
-        walletId,
-        fromDate,
-        toDate,
-        location,
-        exchangePayment,
-        taxCharges,
-        serviceFee,
-        total) {
-        const connection = await mysql.createConnection({
-            host: config.db.host,
-            port: config.db.port,
-            user: config.db.user,
-            password: config.db.password,
-            database: config.db.database
+  // Create the database connection once and reuse it
+  async connect() {
+    if (!this.connection) {
+      try {
+        this.connection = await mysql.createConnection({
+          host: config.db.host,
+          port: config.db.port,
+          user: config.db.user,
+          password: config.db.password,
+          database: config.db.database,
         });
-
-        // Check if user already exists
-        const insert = `INSERT INTO post (
-            from_currency,
-            from_amount,
-            to_currency,
-            to_amount,
-            name,
-            walletId,
-            from_date,
-            to_date,
-            location,
-            exchange_payment,
-            tax_charges,
-            service_fee,
-            total
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        const values = [
-            fromCurrency,
-            fromAmount,
-            toCurrency,
-            toAmount,
-            name,
-            walletId,
-            fromDate,
-            toDate,
-            location,
-            exchangePayment,
-            taxCharges,
-            serviceFee,
-            total
-        ];
-
-        try {
-            await connection.execute(insert, values);
-            return true;
-        } catch (error) {
-            console.error(error);
-            return false;
-        } finally {
-            await connection.end();
-        }
+        console.log('Database connection established.');
+      } catch (error) {
+        console.error('Error establishing database connection:', error);
+        throw error;
+      }
     }
+  }
 
-    async delete(id) {
-        const connection = await mysql.createConnection({
-            host: config.db.host,
-            port: config.db.port,
-            user: config.db.user,
-            password: config.db.password,
-            database: config.db.database
-        });
+  async add(
+    fromCurrency,
+    fromAmount,
+    toCurrency,
+    toAmount,
+    name,
+    walletId,
+    fromDate,
+    toDate,
+    location,
+    exchangePayment,
+    taxCharges,
+    serviceFee,
+    total
+  ) {
+    const query = `
+      INSERT INTO post (
+        from_currency, from_amount, to_currency, to_amount, name,
+        walletId, from_date, to_date, location, exchange_payment,
+        tax_charges, service_fee, total
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const values = [
+      fromCurrency, fromAmount, toCurrency, toAmount, name,
+      walletId, fromDate, toDate, location, exchangePayment,
+      taxCharges, serviceFee, total
+    ];
 
-        const pick = `DELETE FROM post WHERE id = ?`;
-        const values = [id];
-
-        try {
-            await connection.execute(pick, values);
-            return true;
-        } catch (error) {
-            console.error(error);
-            return false;
-        } finally {
-            await connection.end();
-        }
-
+    try {
+      await this.connect(); // Ensure connection is established
+      await this.connection.execute(query, values);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
     }
+  }
 
-    async queryAll() {
-        const connection = await mysql.createConnection({
-            host: config.db.host,
-            port: config.db.port,
-            user: config.db.user,
-            password: config.db.password,
-            database: config.db.database
-        });
+  async delete(id) {
+    const query = `DELETE FROM post WHERE id = ?`;
+    const values = [id];
 
-        const query = `SELECT * FROM post`;
-
-        try {
-            const [rows] = await connection.execute(query);
-            if (rows.length === 0) {
-                return null;
-            }
-
-            return rows;
-        } catch (error) {
-            console.error(error);
-            return false;
-        } finally {
-            await connection.end();
-        }
+    try {
+      await this.connect(); // Ensure connection is established
+      await this.connection.execute(query, values);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
     }
+  }
 
-    async queryByExchange(fromCurrency, toCurrency) {
-        const connection = await mysql.createConnection({
-            host: config.db.host,
-            port: config.db.port,
-            user: config.db.user,
-            password: config.db.password,
-            database: config.db.database
-        });
+  async queryAll() {
+    const query = `SELECT * FROM post`;
 
-        const query = `SELECT * FROM post WHERE from_currency = ? AND to_currency = ?`;
-        const values = [fromCurrency, toCurrency];
-
-        try {
-            const [rows] = await connection.execute(query, values);
-            if (rows.length === 0) {
-                return null;
-            }
-
-            return rows;
-        } catch (error) {
-            console.error(error);
-            return false;
-        } finally {
-            await connection.end();
-        }
+    try {
+      await this.connect(); // Ensure connection is established
+      const [rows] = await this.connection.execute(query);
+      return rows.length ? rows : null;
+    } catch (error) {
+      console.error(error);
+      return false;
     }
+  }
 
-    // New method to query a post by ID
-    async queryById(id) {
-        const connection = await mysql.createConnection({
-            host: config.db.host,
-            port: config.db.port,
-            user: config.db.user,
-            password: config.db.password,
-            database: config.db.database
-        });
+  async queryByExchange(fromCurrency, toCurrency) {
+    const query = `SELECT * FROM post WHERE from_currency = ? AND to_currency = ?`;
+    const values = [fromCurrency, toCurrency];
 
-        const query = `SELECT * FROM post WHERE id = ?`;
-        const values = [id];
-
-        try {
-            const [rows] = await connection.execute(query, values);
-            if (rows.length === 0) {
-                return null; // No post found with the given ID
-            }
-
-            return rows[0]; // Return the first row (the post)
-        } catch (error) {
-            console.error(error);
-            return false;
-        } finally {
-            await connection.end();
-        }
+    try {
+      await this.connect(); // Ensure connection is established
+      const [rows] = await this.connection.execute(query, values);
+      return rows.length ? rows : null;
+    } catch (error) {
+      console.error(error);
+      return false;
     }
+  }
+
+  async queryById(id) {
+    const query = `SELECT * FROM post WHERE id = ?`;
+    const values = [id];
+
+    try {
+      await this.connect(); // Ensure connection is established
+      const [rows] = await this.connection.execute(query, values);
+      return rows.length ? rows[0] : null;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  // Close the connection when the app is shutting down
+  async closeConnection() {
+    if (this.connection) {
+      try {
+        await this.connection.end();
+        console.log('Database connection closed.');
+      } catch (error) {
+        console.error('Error closing database connection:', error);
+      }
+    }
+  }
 }
 
 module.exports = PostAd;

@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  db:
+    image: mysql:8
+    container_name: mysql-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env.development  # Load environment variables from .env file
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./sql/initDB.sql:/docker-entrypoint-initdb.d/initDB.sql:ro
+    networks:
+      - app-network
+
   express-app:
     build:
       context: .
@@ -11,24 +29,6 @@ services:
       - .env.development  # Load environment variables from .env file
     depends_on:
       - db
-    networks:
-      - app-network
-
-  db:
-    image: mysql:8
-    container_name: mysql-container
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - 3306:3306
-    env_file:
-      - .env.development  # Load environment variables from .env file
-    volumes:
-      - db-data:/var/lib/mysql
     networks:
       - app-network
 

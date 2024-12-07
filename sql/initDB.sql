@@ -161,3 +161,12 @@ CREATE TABLE `transactions` (
   CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`from_currency_id`) REFERENCES `currencies` (`id`),
   CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`to_currency_id`) REFERENCES `currencies` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Grant all privileges to the root user
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' WITH GRANT OPTION;
+
+-- Optional: Grant privileges to another user
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+
+-- Apply changes
+FLUSH PRIVILEGES;

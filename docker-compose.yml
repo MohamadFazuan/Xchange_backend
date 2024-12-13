@@ -6,18 +6,24 @@ services:
     container_name: mysql-container
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: xchangedb
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
     env_file:
-      - .env.development  # Load environment variables from .env file
+      - .env.development
     volumes:
       - db-data:/var/lib/mysql
       - ./sql/initDB.sql:/docker-entrypoint-initdb.d/initDB.sql:ro
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   express-app:
     build:
@@ -26,7 +32,7 @@ services:
     container_name: express-container
     restart: always
     env_file:
-      - .env.development  # Load environment variables from .env file
+      - .env.development
     depends_on:
       - db
     networks:
@@ -49,3 +55,4 @@ volumes:
 
 networks:
   app-network:
+    driver: bridge

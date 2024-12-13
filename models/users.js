@@ -3,15 +3,32 @@ const bcrypt = require('bcryptjs');
 const config = require('../config.js');
 
 class User {
-  async register(username, email, password, walletId) {
-    const connection = await mysql.createConnection({
-      host: config.db.host,
-      port: config.db.port,
-      user: config.db.user,
-      password: config.db.password,
-      database: config.db.database
-    });
+  constructor() {
+    this.connection = null; // Initialize a connection holder
+  }
 
+  // Create the database connection once and reuse it
+  async connect() {
+    if (!this.connection) {
+      try {
+        this.connection = await mysql.createConnection({
+          host: config.db.host,
+          port: config.db.port,
+          user: config.db.user,
+          password: config.db.password,
+          database: config.db.database,
+        });
+        console.log('Database connection established.');
+      } catch (error) {
+        console.error('Error establishing database connection:', error);
+        throw error;
+      }
+    }
+  }
+
+  async register(username, email, password, walletId) {
+    await this.connect();
+    
     // Check if user already exists
     const query1 = `SELECT * FROM users WHERE username = ? OR email = ?`;
     const values1 = [username, email];
@@ -46,13 +63,8 @@ class User {
   }
 
   async login(username, password) {
-    const connection = await mysql.createConnection({
-      host: config.db.host,
-      port: config.db.port,
-      user: config.db.user,
-      password: config.db.password,
-      database: config.db.database
-    });
+    await this.connect();
+
 
     const query = `SELECT * FROM users WHERE username = ?`;
     const values = [username];
@@ -77,6 +89,30 @@ class User {
       await connection.end();
     }
   }
+
+  // Inside your User class
+
+async getAllUsers() {
+  const connection = await mysql.createConnection({
+    host: config.db.host,
+    port: config.db.port,
+    user: config.db.user,
+    password: config.db.password,
+    database: config.db.database
+  });
+
+  const query = 'SELECT * FROM users';
+  
+  try {
+    const [rows] = await connection.execute(query);
+    return rows; // Return all users
+  } catch (error) {
+    console.error(error);
+    return [];
+  } finally {
+    await connection.end();
+  }
+}
 }
 
 module.exports = User;

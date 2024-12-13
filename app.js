@@ -194,14 +194,13 @@ app.get('/postAd/querybyId/', async (req, res) => {
   }
 });
 
-app.get('/friends/queryAll', async (req, res) => {
-
-  try {
-    const friend = new Friends();
-    const query = await friend.queryByExchange(from, to);
+app.get('/users', async (req, res) => {
+ try {
+    const user = new User();
+    const query = await user.getAllUsers();
     
     if (query) {
-      res.status(201).json(query);
+      res.status(200).json(query);
     } else {
       res.status(500).send({ message: 'Failed to find ad' });
     }

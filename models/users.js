@@ -28,13 +28,13 @@ class User {
 
   async register(username, email, password, walletId) {
     await this.connect();
-    
+
     // Check if user already exists
     const query1 = `SELECT * FROM users WHERE username = ? OR email = ?`;
     const values1 = [username, email];
 
     try {
-      const [rows] = await connection.execute(query1, values1);
+      const [rows] = await this.connection.execute(query1, values1);
       if (rows.length > 0) {
         // User already exists, return error
         return false;
@@ -52,13 +52,13 @@ class User {
     const values = [username, email, hashedPassword, walletId];
 
     try {
-      await connection.execute(query, values);
+      await this.connection.execute(query, values);
       return true;
     } catch (error) {
       console.error(error);
       return false;
     } finally {
-      await connection.end();
+      await this.connection.end();
     }
   }
 
@@ -69,7 +69,7 @@ class User {
     const values = [username];
 
     try {
-      const [rows] = await connection.execute(query, values);
+      const [rows] = await this.connection.execute(query, values);
       if (rows.length === 0) {
         return null;
       }
@@ -85,27 +85,27 @@ class User {
       console.error(error);
       return null;
     } finally {
-      await connection.end();
+      await this.connection.end();
     }
   }
 
   // Inside your User class
 
-async getAllUsers() {
-  await this.connect();
+  async getAllUsers() {
+    await this.connect();
 
-  const query = 'SELECT * FROM users';
-  
-  try {
-    const [rows] = await connection.execute(query);
-    return rows; // Return all users
-  } catch (error) {
-    console.error(error);
-    return [];
-  } finally {
-    await connection.end();
+    const query = 'SELECT * FROM users';
+
+    try {
+      const [rows] = await this.connection.execute(query);
+      return rows; // Return all users
+    } catch (error) {
+      console.error(error);
+      return [];
+    } finally {
+      await this.connection.end();
+    }
   }
-}
 }
 
 module.exports = User;

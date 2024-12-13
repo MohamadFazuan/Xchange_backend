@@ -65,7 +65,6 @@ class User {
   async login(username, password) {
     await this.connect();
 
-
     const query = `SELECT * FROM users WHERE username = ?`;
     const values = [username];
 
@@ -93,13 +92,7 @@ class User {
   // Inside your User class
 
 async getAllUsers() {
-  const connection = await mysql.createConnection({
-    host: config.db.host,
-    port: config.db.port,
-    user: config.db.user,
-    password: config.db.password,
-    database: config.db.database
-  });
+  await this.connect();
 
   const query = 'SELECT * FROM users';
   

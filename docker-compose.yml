@@ -13,7 +13,7 @@ services:
     ports:
       - "3306:3306"
     env_file:
-      - .env.development
+      - .env
     volumes:
       - db-data:/var/lib/mysql
       - ./sql/initDB.sql:/docker-entrypoint-initdb.d/initDB.sql:ro
@@ -32,7 +32,7 @@ services:
     container_name: express-container
     restart: always
     env_file:
-      - .env.development
+      - .env
     depends_on:
       - db
     networks:

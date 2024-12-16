@@ -2,7 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const User = require('./models/users');
-const PostAd = require('./models/postAd')
+const PostAd = require('./models/postAd');
+const Transaction = require('./models/transaction');
 const axios = require('axios');
 
 const app = express();
@@ -206,6 +207,43 @@ app.get('/users', async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    res.status(500).send({ message: error });
+  }
+});
+
+app.post('/transaction/add', async (req, res) => {
+  const {
+    from, to, fromAmount, toAmount, fromCurrency, toCurrency,
+  } = req.body;
+
+  try {
+    const tx = new Transaction();
+    const posted = await tx.add(
+      from, to, fromAmount, toAmount, fromCurrency, toCurrency);
+    if (posted) {
+      res.status(201).send({ message: 'Transaction Added' });
+    } else {
+      res.status(500).send({ message: 'Failed to add transaction' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: error });
+  }
+});
+
+app.post('/transaction/query', async (req, res) => {
+  const walletId = req.query.walletId
+
+  try {
+    const tx = new Transaction();
+    const query = await tx.query(walletId);
+    if (query) {
+      res.status(201).json(query);
+    } else {
+      res.status(500).send({ message: 'Failed to query' });
+    }
+  } catch (error) {
+    console.error(error);
     res.status(500).send({ message: error });
   }
 });

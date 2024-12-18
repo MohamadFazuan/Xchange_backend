@@ -31,9 +31,9 @@ class Transaction {
         await this.connect(); // Ensure connection is established
 
         const timestamp = Date.now();
-        const query = "INSERT INTO transactions (`from`, `to`, from_currency, to_currency, from_amount, to_amount, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        const query = "INSERT INTO transactions (`from`, `to`, from_currency, to_currency, from_amount, to_amount, timestamp) VALUES (?, ?, ?, ?, ?, ?, NOW())";
         const values = [
-            from, to, fromCurrency, toCurrency, fromAmount, toAmount, timestamp
+            from, to, fromCurrency, toCurrency, fromAmount, toAmount
         ];
 
         try {

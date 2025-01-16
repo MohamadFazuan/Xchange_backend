@@ -234,7 +234,7 @@ app.post('/transaction/add', async (req, res) => {
 });
 
 app.post('/transaction/query', async (req, res) => {
-  const walletId = req.query.walletId
+  const walletId = req.body.walletId
 
   try {
     const tx = new Transaction();

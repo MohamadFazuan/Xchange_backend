@@ -90,10 +90,15 @@ class PostAd {
     }
   }
 
-  async queryByExchange(fromCurrency, toCurrency) {
-    const query = `SELECT * FROM post WHERE from_currency = ? AND to_currency = ?`;
-    const values = [fromCurrency, toCurrency];
-
+  async queryByExchange(fromCurrency, toCurrency, minAmount, maxAmount) {
+    const query = `
+      SELECT * 
+      FROM post 
+      WHERE from_currency = ? 
+        AND to_currency = ? 
+        AND to_amount BETWEEN ? AND ?`;
+    const values = [fromCurrency, toCurrency, minAmount, maxAmount];
+  
     try {
       await this.connect(); // Ensure connection is established
       const [rows] = await this.connection.execute(query, values);

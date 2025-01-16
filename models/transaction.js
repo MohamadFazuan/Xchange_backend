@@ -46,20 +46,17 @@ class Transaction {
     }
 
     async query(walletId) {
-        await this.connect();
-
         const query = 'SELECT * FROM transactions WHERE `from` = ? OR `to` = ?';
         const values = [walletId]
 
         try {
+            await this.connect();
             const [rows] = await this.connection.execute(query, values);
-            return rows; // Return all users
+            return rows.length ? rows : null; // Return all users
         } catch (error) {
             console.error(error);
             return [];
-        } finally {
-            await this.connection.end();
-        }
+        } 
     }
 }
 

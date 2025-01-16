@@ -91,6 +91,8 @@ class PostAd {
   }
 
   async queryByExchange(fromCurrency, toCurrency, minAmount, maxAmount) {
+    console.log(minAmount, maxAmount);
+    
     const query = `
       SELECT * 
       FROM post 
@@ -102,7 +104,7 @@ class PostAd {
     try {
       await this.connect(); // Ensure connection is established
       const [rows] = await this.connection.execute(query, values);
-      return rows.length ? rows : null;
+      return rows.length ? rows : [];
     } catch (error) {
       console.error(error);
       return false;

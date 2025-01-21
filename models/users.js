@@ -26,12 +26,13 @@ class User {
     }
   }
 
-  async register(username, email, password, walletId) {
+  async register(username, email, password, walletId, fcmToken) {
     await this.connect();
 
     // Check if user already exists
     const query1 = `SELECT * FROM users WHERE username = ? OR email = ?`;
     const values1 = [username, email];
+
 
     try {
       const [rows] = await this.connection.execute(query1, values1);

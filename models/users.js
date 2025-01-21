@@ -48,8 +48,8 @@ class User {
 
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const query = `INSERT INTO users (id, username, email, password, walletId) VALUES (null, ?, ?, ?, ?)`;
-    const values = [username, email, hashedPassword, walletId];
+    const query = `INSERT INTO users (id, username, email, password, walletId, fcm_token) VALUES (null, ?, ?, ?, ?, ?)`;
+    const values = [username, email, hashedPassword, walletId, fcmToken];
 
     try {
       await this.connection.execute(query, values);

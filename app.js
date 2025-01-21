@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/users');
 const PostAd = require('./models/postAd');
 const Transaction = require('./models/transaction');
+const Message = require('./models/message');
 const axios = require('axios');
 
 const app = express();
@@ -12,10 +13,10 @@ app.use(bodyParser.json());
 const config = require('./config');
 
 app.post('/register', async (req, res) => {
-  const { username, email, password, walletId } = req.body;
+  const { username, email, password, walletId, fcmToken } = req.body;
   try {
     const user = new User();
-    const registered = await user.register(username, email, password, walletId);
+    const registered = await user.register(username, email, password, walletId, fcmToken);
     if (registered) {
       res.status(201).send({ message: 'User created successfully' });
     } else {
@@ -36,8 +37,6 @@ app.post('/login', async (req, res) => {
       const token = jwt.sign({ userId: userFound.id }, config.jwt.secret, {
         expiresIn: config.jwt.expires
       });
-      console.log(userFound);
-      
       res.send(userFound);
     } else {
       res.status(401).send({ message: 'Invalid username or password' });
@@ -145,7 +144,7 @@ app.get('/postAd/queryAll', async (req, res) => {
   try {
     const post = new PostAd();
     const query = await post.queryAll();
-    
+
     if (query) {
       res.status(201).json(query);
     } else {
@@ -167,7 +166,7 @@ app.post('/postAd/querybyExchange', async (req, res) => {
   try {
     const post = new PostAd();
     const query = await post.queryByExchange(from, to, minAmount, maxAmount);
-    
+
     if (query) {
       res.status(201).json(query);
     } else {
@@ -185,7 +184,7 @@ app.get('/postAd/querybyId/', async (req, res) => {
   try {
     const post = new PostAd();
     const query = await post.queryById(id);
-    
+
     if (query) {
       res.status(200).json(query);
     } else {
@@ -198,10 +197,10 @@ app.get('/postAd/querybyId/', async (req, res) => {
 });
 
 app.get('/users', async (req, res) => {
- try {
+  try {
     const user = new User();
     const query = await user.getAllUsers();
-    
+
     if (query) {
       res.status(200).json(query);
     } else {
@@ -247,6 +246,44 @@ app.post('/transaction/query', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: error });
+  }
+});
+
+app.post('/send-message', async (req, res) => {
+  const { to, message } = req.body;
+
+  try {
+    const messages = new Message();
+    const sendMessage = messages.sendNotification(to, message);
+
+    if (sendMessage) {
+      res.status(200).json({
+        message: 'Message sent successfully',
+        data: sendMessage
+      });
+    } else {
+      res.status(500).send({ message: 'Failed to send message' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error });
+  }
+});
+
+app.post('/update-fcm-token', async (req, res) => {
+  const { username, newFcmToken } = req.body;
+
+  try {
+    const message = new Message();
+    const updated = await message.updateFcm(username, newFcmToken);
+    if (updated) {
+      res.status(201).send({ message: 'Fcm token updated' });
+    } else {
+      res.status(500).send({ message: 'Failed to update fcm token' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error });
   }
 });
 

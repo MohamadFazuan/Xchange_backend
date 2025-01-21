@@ -47,7 +47,7 @@ class Transaction {
 
     async query(walletId) {
         const query = 'SELECT * FROM transactions WHERE `from` = ? OR `to` = ?';
-        const values = [walletId, walletId]
+        const values = [walletId, walletId];
 
         try {
             await this.connect();

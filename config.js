@@ -18,5 +18,8 @@ module.exports = {
   },
   rate: {
     apiKey: process.env.RATE_API_KEY || 'defaultApiKey'
+  },
+  fcm:{
+    serverKey: process.env.MESSAGING_SERVER_KEY
   }
 };

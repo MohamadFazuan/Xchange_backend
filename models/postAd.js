@@ -16,6 +16,9 @@ class PostAd {
           user: config.db.user,
           password: config.db.password,
           database: config.db.database,
+          ssl: {
+            rejectUnauthorized: false
+          }
         });
         console.log('Database connection established.');
       } catch (error) {
@@ -91,20 +94,34 @@ class PostAd {
   }
 
   async queryByExchange(fromCurrency, toCurrency, minAmount, maxAmount) {
-    console.log(minAmount, maxAmount);
-    
     const query = `
-      SELECT * 
-      FROM post 
-      WHERE from_currency = ? 
-        AND to_currency = ? 
-        AND to_amount BETWEEN ? AND ?`;
-    const values = [fromCurrency, toCurrency, minAmount, maxAmount];
+      SELECT *,
+        (from_amount / to_amount) AS exchange_rate,
+        to_amount AS available_amount,
+        from_amount AS required_amount,
+        'reverse' AS match_type
+      FROM post
+      WHERE 
+        from_currency = ? AND to_currency = ? AND to_amount >= ?
+      ORDER BY exchange_rate ASC
+    `;
+    
+    const values = [toCurrency, fromCurrency, minAmount]; // Reverse match parameters
   
     try {
-      await this.connect(); // Ensure connection is established
+      await this.connect();
       const [rows] = await this.connection.execute(query, values);
-      return rows.length ? rows : [];
+  
+      const matchedRows = rows.map(row => ({
+        ...row,
+        matchedAmount: Math.min(row.available_amount, maxAmount),
+        equivalentAmount: Math.round(
+          Math.min(row.available_amount, maxAmount) / row.exchange_rate * 100
+        ) / 100
+      }));
+  
+      return matchedRows.length ? matchedRows : [];
+      
     } catch (error) {
       console.error(error);
       return false;

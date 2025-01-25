@@ -87,7 +87,6 @@ CREATE TABLE `post` (
   `tax_charges` decimal(20,2) NOT NULL,
   `service_fee` decimal(20,2) NOT NULL,
   `total` decimal(20,2) NOT NULL,
-  `isPaid` tinyint(1) NOT NULL DEFAULT '0',
   `createdAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)

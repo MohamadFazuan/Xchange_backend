@@ -19,6 +19,9 @@ class Message {
                     user: config.db.user,
                     password: config.db.password,
                     database: config.db.database,
+                    ssl: {
+                        rejectUnauthorized: false
+                    }
                 });
                 console.log('Database connection established.');
             } catch (error) {
@@ -51,7 +54,7 @@ class Message {
         }
     }
 
-    async sendNotification(to, message) {
+    async sendNotification(to, title, body, dataQr) {
         try {
             // 1. Get FCM token
             const query = 'SELECT fcm_token FROM users WHERE username = ?';
@@ -70,8 +73,11 @@ class Message {
                 "message": {
                     "token": rows[0].fcm_token,
                     "notification": {
-                        "body": "This is an FCM notification message!",
-                        "title": "FCM Message"
+                        "body": body,
+                        "title": title,
+                    },
+                    "data": {
+                        "dataQr": dataQr // Custom data field
                     }
                 }
             };

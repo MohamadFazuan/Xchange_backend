@@ -17,6 +17,9 @@ class Transaction {
                     user: config.db.user,
                     password: config.db.password,
                     database: config.db.database,
+                    ssl: {
+                        rejectUnauthorized: false
+                    }
                 });
                 console.log('Database connection established.');
             } catch (error) {
@@ -56,7 +59,7 @@ class Transaction {
         } catch (error) {
             console.error(error);
             return [];
-        } 
+        }
     }
 }
 

@@ -196,6 +196,24 @@ app.get('/postAd/querybyId/', async (req, res) => {
   }
 });
 
+app.post('/postAd/delete', async (req, res) => {
+  var id = req.body.id
+
+  try {
+    const post = new PostAd();
+    const query = await post.delete(id);
+
+    if (query) {
+      res.status(200).json(query);
+    } else {
+      res.status(500).send({ message: 'Failed to find ad' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: error });
+  }
+});
+
 app.get('/users', async (req, res) => {
   try {
     const user = new User();
@@ -250,11 +268,11 @@ app.post('/transaction/query', async (req, res) => {
 });
 
 app.post('/send-message', async (req, res) => {
-  const { to, message } = req.body;
+  const { to, title, body, dataQr } = req.body;
 
   try {
     const messages = new Message();
-    const sendMessage = messages.sendNotification(to, message);
+    const sendMessage = messages.sendNotification(to, title, body, dataQr);
 
     if (sendMessage) {
       res.status(200).json({

@@ -15,3 +15,6 @@ benchmarks/graphs
 .env
 # ignore additional files using core.excludesFile
 # https://git-scm.com/docs/gitignore
+
+# google application credentials
+service-account.json

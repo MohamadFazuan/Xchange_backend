@@ -6,9 +6,14 @@ class PostAd {
     this.connection = null; // Initialize a connection holder
   }
 
+  _log(action, status, details = '') {
+    console.log(`[PostAd][${action}][${status}] ${details}`);
+  }
+
   // Create the database connection once and reuse it
   async connect() {
     if (!this.connection) {
+      this._log('connect', 'start', 'Establishing database connection');
       try {
         this.connection = await mysql.createConnection({
           host: config.db.host,
@@ -20,9 +25,9 @@ class PostAd {
             rejectUnauthorized: false
           }
         });
-        console.log('Database connection established.');
+        this._log('connect', 'success', 'Database connection established');
       } catch (error) {
-        console.error('Error establishing database connection:', error);
+        this._log('connect', 'error', `Failed to connect: ${error.message}`);
         throw error;
       }
     }
@@ -43,6 +48,7 @@ class PostAd {
     serviceFee,
     total
   ) {
+    this._log('add', 'start', `Adding new post: ${fromCurrency}${fromAmount} -> ${toCurrency}${toAmount}`);
     const query = `
       INSERT INTO post (
         from_currency, from_amount, to_currency, to_amount, name,
@@ -59,85 +65,80 @@ class PostAd {
     try {
       await this.connect(); // Ensure connection is established
       await this.connection.execute(query, values);
+      this._log('add', 'success', `Post added successfully`);
       return true;
     } catch (error) {
-      console.error(error);
+      this._log('add', 'error', `Failed to add post: ${error.message}`);
       return false;
     }
   }
 
   async delete(id) {
+    this._log('delete', 'start', `Deleting post ID: ${id}`);
     const query = `DELETE FROM post WHERE id = ?`;
     const values = [id];
 
     try {
       await this.connect(); // Ensure connection is established
       await this.connection.execute(query, values);
+      this._log('delete', 'success', `Deleted post ID: ${id}`);
       return true;
     } catch (error) {
-      console.error(error);
+      this._log('delete', 'error', `Delete failed: ${error.message}`);
       return false;
     }
   }
 
   async queryAll() {
+    this._log('queryAll', 'start', 'Fetching all posts');
     const query = `SELECT * FROM post`;
 
     try {
       await this.connect(); // Ensure connection is established
       const [rows] = await this.connection.execute(query);
+      this._log('queryAll', 'success', `Found ${rows.length} posts`);
       return rows.length ? rows : null;
     } catch (error) {
-      console.error(error);
+      this._log('queryAll', 'error', `Fetch failed: ${error.message}`);
       return false;
     }
   }
 
-  async queryByExchange(fromCurrency, toCurrency, minAmount, maxAmount) {
+  async queryByExchange(fromCurrency, toCurrency, fromAmount, toAmount) {
+    this._log('queryByExchange', 'start', `Searching ${fromCurrency}${fromAmount} -> ${toCurrency}${toAmount}`);
     const query = `
-      SELECT *,
-        (from_amount / to_amount) AS exchange_rate,
-        to_amount AS available_amount,
-        from_amount AS required_amount,
-        'reverse' AS match_type
+      SELECT *
       FROM post
       WHERE 
-        from_currency = ? AND to_currency = ? AND to_amount >= ?
-      ORDER BY exchange_rate ASC
+        from_currency = ? AND to_currency = ? AND to_amount >= ? AND from_amount <= ?
+      ORDER BY to_amount ASC
     `;
     
-    const values = [toCurrency, fromCurrency, minAmount]; // Reverse match parameters
+    const values = [toCurrency, fromCurrency, fromAmount, toAmount]; // Reverse match parameters
   
     try {
       await this.connect();
       const [rows] = await this.connection.execute(query, values);
-  
-      const matchedRows = rows.map(row => ({
-        ...row,
-        matchedAmount: Math.min(row.available_amount, maxAmount),
-        equivalentAmount: Math.round(
-          Math.min(row.available_amount, maxAmount) / row.exchange_rate * 100
-        ) / 100
-      }));
-  
-      return matchedRows.length ? matchedRows : [];
-      
+      this._log('queryByExchange', 'success', `Found ${rows.length} matching posts`);
+      return rows.length ? rows : null;
     } catch (error) {
-      console.error(error);
+      this._log('queryByExchange', 'error', `Search failed: ${error.message}`);
       return false;
     }
   }
 
   async queryById(id) {
+    this._log('queryById', 'start', `Searching post ID: ${id}`);
     const query = `SELECT * FROM post WHERE id = ?`;
     const values = [id];
 
     try {
       await this.connect(); // Ensure connection is established
       const [rows] = await this.connection.execute(query, values);
+      this._log('queryById', 'success', rows.length ? `Found post ID: ${id}` : 'Post not found');
       return rows.length ? rows[0] : null;
     } catch (error) {
-      console.error(error);
+      this._log('queryById', 'error', `Search failed: ${error.message}`);
       return false;
     }
   }
@@ -145,11 +146,12 @@ class PostAd {
   // Close the connection when the app is shutting down
   async closeConnection() {
     if (this.connection) {
+      this._log('closeConnection', 'start', 'Closing database connection');
       try {
         await this.connection.end();
-        console.log('Database connection closed.');
+        this._log('closeConnection', 'success', 'Database connection closed');
       } catch (error) {
-        console.error('Error closing database connection:', error);
+        this._log('closeConnection', 'error', `Failed to close connection: ${error.message}`);
       }
     }
   }

@@ -160,12 +160,12 @@ app.get('/postAd/queryAll', async (req, res) => {
 app.post('/postAd/querybyExchange', async (req, res) => {
   const from = req.body.from;
   const to = req.body.to;
-  const minAmount = req.body.minAmount;
-  const maxAmount = req.body.maxAmount;
+  const fromAmount = req.body.fromAmount;
+  const toAmount = req.body.toAmount;
 
   try {
     const post = new PostAd();
-    const query = await post.queryByExchange(from, to, minAmount, maxAmount);
+    const query = await post.queryByExchange(from, to, fromAmount, toAmount);
 
     if (query) {
       res.status(201).json(query);

@@ -7,9 +7,14 @@ class Transaction {
         this.connection = null; // Initialize a connection holder
     }
 
+    _log(action, status, details = '') {
+        console.log(`[Transaction][${action}][${status}] ${details}`);
+    }
+
     // Create the database connection once and reuse it
     async connect() {
         if (!this.connection) {
+            this._log('connect', 'start', 'Establishing database connection');
             try {
                 this.connection = await mysql.createConnection({
                     host: config.db.host,
@@ -21,16 +26,16 @@ class Transaction {
                         rejectUnauthorized: false
                     }
                 });
-                console.log('Database connection established.');
+                this._log('connect', 'success', 'Database connection established');
             } catch (error) {
-                console.error('Error establishing database connection:', error);
+                this._log('connect', 'error', `Failed to connect: ${error.message}`);
                 throw error;
             }
         }
     }
 
     async add(from, to, fromAmount, toAmount, fromCurrency, toCurrency) {
-
+        this._log('create', 'start', `Creating transaction: Buyer: ${from}, Seller: ${to}`);
         await this.connect(); // Ensure connection is established
 
         const timestamp = Date.now();
@@ -41,23 +46,26 @@ class Transaction {
 
         try {
             await this.connection.execute(query, values);
+            this._log('create', 'success', `Transaction created successfully`);
             return true;
         } catch (error) {
-            console.error(error);
+            this._log('create', 'error', `Create failed: ${error.message}`);
             return false;
         }
     }
 
     async query(walletId) {
+        this._log('get', 'start', `Fetching transaction ID: ${walletId}`);
         const query = 'SELECT * FROM transactions WHERE `from` = ? OR `to` = ?';
         const values = [walletId, walletId];
 
         try {
             await this.connect();
             const [rows] = await this.connection.execute(query, values);
+            this._log('get', 'success', `Transaction found`);
             return rows.length ? rows : null; // Return all users
         } catch (error) {
-            console.error(error);
+            this._log('get', 'error', `Get failed: ${error.message}`);
             return [];
         }
     }

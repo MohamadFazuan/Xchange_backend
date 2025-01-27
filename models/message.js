@@ -9,9 +9,14 @@ class Message {
         this.connection = null; // Initialize a connection holder
     }
 
+    _log(action, status, details = '') {
+        console.log(`[Message][${action}][${status}] ${details}`);
+    }
+
     // Create the database connection once and reuse it
     async connect() {
         if (!this.connection) {
+            this._log('connect', 'start', 'Establishing database connection');
             try {
                 this.connection = await mysql.createConnection({
                     host: config.db.host,
@@ -23,9 +28,9 @@ class Message {
                         rejectUnauthorized: false
                     }
                 });
-                console.log('Database connection established.');
+                this._log('connect', 'success', 'Database connection established');
             } catch (error) {
-                console.error('Error establishing database connection:', error);
+                this._log('connect', 'error', `Failed to connect: ${error.message}`);
                 throw error;
             }
         }
@@ -104,6 +109,7 @@ class Message {
     }
 
     async updateFcm(username, newFcmToken) {
+        this._log('updateFcm', 'start', `Updating FCM token for: ${username}`);
         try {
             // SQL query to update the FCM token for the given username
             const query = `
@@ -115,13 +121,14 @@ class Message {
             try {
                 await this.connect();
                 const [result] = await this.connection.execute(query, values);
+                this._log('updateFcm', 'success', `FCM token updated for: ${username}`);
                 return result.affectedRows > 0;
             } catch (error) {
-                console.error(error);
+                this._log('updateFcm', 'error', `Failed to update FCM token: ${error.message}`);
                 return [];
             }
         } catch (error) {
-            console.error('Error updating FCM token:', error);
+            this._log('updateFcm', 'error', `Failed to update FCM token: ${error.message}`);
             throw error;
         }
     }

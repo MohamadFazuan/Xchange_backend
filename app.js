@@ -76,7 +76,7 @@ app.post('/exchange-rate', async (req, res) => {
 });
 
 // Add a new post ad
-app.post('/postAd', async (req, res) => {
+app.post('/postAd/add', async (req, res) => {
   const {
     fromCurrency,
     fromAmount,
@@ -120,6 +120,52 @@ app.post('/postAd', async (req, res) => {
   }
 });
 
+app.post('/postAd/updatePost', async (req, res) => {
+  const {
+    id,
+    fromCurrency,
+    fromAmount,
+    toCurrency,
+    toAmount,
+    name,
+    walletId,
+    fromDate,
+    toDate,
+    location,
+    exchangePayment,
+    taxCharges,
+    serviceFee,
+    total
+  } = req.body;
+
+  try {
+    const post = new PostAd();
+    const posted = await post.updatePost(
+      id,
+      fromCurrency,
+      fromAmount,
+      toCurrency,
+      toAmount,
+      name,
+      walletId,
+      fromDate,
+      toDate,
+      location,
+      exchangePayment,
+      taxCharges,
+      serviceFee,
+      total);
+    if (posted) {
+      res.status(201).send({ message: 'Ad posted' });
+    } else {
+      res.status(500).send({ message: 'Failed to post' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: error });
+  }
+});
+
 // Delete a post ad
 app.delete('/postAd/:id', (req, res) => {
   const id = req.params.id;
@@ -139,7 +185,7 @@ app.delete('/postAd/:id', (req, res) => {
 });
 
 // Query all posted ad
-app.get('/postAd/queryAll', async (req, res) => {
+app.post('/postAd/queryAll', async (req, res) => {
 
   try {
     const post = new PostAd();
@@ -169,6 +215,24 @@ app.post('/postAd/querybyExchange', async (req, res) => {
 
     if (query) {
       res.status(201).json(query);
+    } else {
+      res.status(500).send({ message: 'Failed to find ad' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: error });
+  }
+});
+
+app.post('/postAd/querybyUser/', async (req, res) => {
+  var username = req.body.username
+
+  try {
+    const post = new PostAd();
+    const query = await post.queryByUser(username);
+
+    if (query) {
+      res.status(200).json(query);
     } else {
       res.status(500).send({ message: 'Failed to find ad' });
     }

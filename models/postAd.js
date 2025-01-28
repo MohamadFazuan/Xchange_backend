@@ -73,6 +73,72 @@ class PostAd {
     }
   }
 
+  async updatePost(
+    id,
+    fromCurrency,
+    fromAmount,
+    toCurrency,
+    toAmount,
+    name,
+    walletId,
+    fromDate,
+    toDate,
+    location,
+    taxCharges,
+    serviceFee,
+  ) {
+    this._log('updatePost', 'start', `Updating post ID ${id}: ${fromCurrency}${fromAmount} -> ${toCurrency}${toAmount}`);
+    const query = `
+        UPDATE post 
+        SET from_currency = ?, 
+            from_amount = ?,
+            to_currency = ?,
+            to_amount = ?,
+            name = ?,
+            walletId = ?,
+            from_date = ?,
+            to_date = ?,
+            location = ?,
+            exchange_payment = ?,
+            tax_charges = ?,
+            service_fee = ?,
+            total = ?
+        WHERE id = ?
+    `;
+
+    const values = [
+      fromCurrency,
+      fromAmount,
+      toCurrency,
+      toAmount,
+      name,
+      walletId,
+      fromDate,
+      toDate,
+      location,
+      toAmount,
+      taxCharges,
+      serviceFee,
+      toAmount,
+      id
+    ];
+
+    try {
+      await this.connect();
+      const [result] = await this.connection.execute(query, values);
+      if (result.affectedRows > 0) {
+        this._log('updatePost', 'success', `Post ${id} updated successfully`);
+        return true;
+      } else {
+        this._log('updatePost', 'error', `Post ${id} not found`);
+        return false;
+      }
+    } catch (error) {
+      this._log('updatePost', 'error', `Failed to update post: ${error.message}`);
+      return false;
+    }
+  }
+
   async delete(id) {
     this._log('delete', 'start', `Deleting post ID: ${id}`);
     const query = `DELETE FROM post WHERE id = ?`;
@@ -110,12 +176,16 @@ class PostAd {
       SELECT *
       FROM post
       WHERE 
-        from_currency = ? AND to_currency = ? AND to_amount >= ? AND from_amount <= ?
-      ORDER BY to_amount ASC
+        (from_currency = ? AND to_currency = ? AND to_amount >= ?)
+        OR
+        (from_currency = ? AND to_currency = ? AND from_amount >= ?)
+      ORDER BY from_amount ASC
     `;
-    
-    const values = [toCurrency, fromCurrency, fromAmount, toAmount]; // Reverse match parameters
-  
+
+    const values = [toCurrency, fromCurrency, toAmount,
+      toCurrency, fromCurrency, fromAmount
+    ]; // Reverse match parameters
+
     try {
       await this.connect();
       const [rows] = await this.connection.execute(query, values);
@@ -139,6 +209,22 @@ class PostAd {
       return rows.length ? rows[0] : null;
     } catch (error) {
       this._log('queryById', 'error', `Search failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  async queryByUser(username) {
+    this._log('queryByUser', 'start', `Searching post ID: ${username}`);
+    const query = `SELECT * FROM post WHERE name = ?`;
+    const values = [username];
+
+    try {
+      await this.connect(); // Ensure connection is established
+      const [rows] = await this.connection.execute(query, values);
+      this._log('queryByUser', 'success', rows.length ? `Found post ID: ${username}` : 'Post not found');
+      return rows.length ? rows : null;
+    } catch (error) {
+      this._log('queryByUser', 'error', `Search failed: ${error.message}`);
       return false;
     }
   }

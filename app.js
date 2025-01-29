@@ -315,11 +315,11 @@ app.post('/transaction/add', async (req, res) => {
 });
 
 app.post('/transaction/query', async (req, res) => {
-  const walletId = req.body.walletId
+  const name = req.body.name
 
   try {
     const tx = new Transaction();
-    const query = await tx.query(walletId);
+    const query = await tx.query(name);
     if (query) {
       res.status(201).json(query);
     } else {

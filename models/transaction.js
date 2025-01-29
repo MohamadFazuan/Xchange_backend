@@ -53,10 +53,10 @@ class Transaction {
         }
     }
 
-    async query(walletId) {
-        this._log('get', 'start', `Fetching transaction ID: ${walletId}`);
+    async query(name) {
+        this._log('get', 'start', `Fetching transaction ID: ${name}`);
         const query = 'SELECT * FROM transactions WHERE `from` = ? OR `to` = ?';
-        const values = [walletId, walletId];
+        const values = [name, name];
 
         try {
             await this.connect();

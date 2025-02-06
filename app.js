@@ -37,7 +37,7 @@ app.post('/login', async (req, res) => {
       const token = jwt.sign({ userId: userFound.id }, config.jwt.secret, {
         expiresIn: config.jwt.expires
       });
-      res.send(userFound);
+      res.status(201).send(userFound);
     } else {
       res.status(401).send({ message: 'Invalid username or password' });
     }

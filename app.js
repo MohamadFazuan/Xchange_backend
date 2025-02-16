@@ -296,13 +296,13 @@ app.get('/users', async (req, res) => {
 
 app.post('/transaction/add', async (req, res) => {
   const {
-    from, to, fromAmount, toAmount, fromCurrency, toCurrency,
+    postId, from, to, fromAmount, toAmount, fromCurrency, toCurrency,
   } = req.body;
 
   try {
     const tx = new Transaction();
     const posted = await tx.add(
-      from, to, fromAmount, toAmount, fromCurrency, toCurrency);
+      postId, from, to, fromAmount, toAmount, fromCurrency, toCurrency);
     if (posted) {
       res.status(201).send({ message: 'Transaction Added' });
     } else {
@@ -320,6 +320,23 @@ app.post('/transaction/query', async (req, res) => {
   try {
     const tx = new Transaction();
     const query = await tx.query(name);
+    if (query) {
+      res.status(201).json(query);
+    } else {
+      res.status(500).send({ message: 'Failed to query' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: error });
+  }
+});
+
+app.post('/transaction/query/success', async (req, res) => {
+  const postId = req.body.postId
+
+  try {
+    const tx = new Transaction();
+    const query = await tx.queryTransaction(postId);
     if (query) {
       res.status(201).json(query);
     } else {

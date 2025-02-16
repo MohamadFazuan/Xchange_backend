@@ -34,13 +34,13 @@ class Transaction {
         }
     }
 
-    async add(from, to, fromAmount, toAmount, fromCurrency, toCurrency) {
+    async add(postId, from, to, fromAmount, toAmount, fromCurrency, toCurrency) {
         this._log('create', 'start', `Creating transaction: Buyer: ${from}, Seller: ${to}`);
         await this.connect(); // Ensure connection is established
 
-        const query = 'INSERT INTO transactions (`from`, `to`, from_currency, to_currency, from_amount, to_amount, timestamp) VALUES (?, ?, ?, ?, ?, ?, NOW())';
+        const query = 'INSERT INTO transactions (post_id, `from`, `to`, from_currency, to_currency, from_amount, to_amount, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())';
         const values = [
-            from, to, fromCurrency, toCurrency, fromAmount, toAmount
+            postId, from, to, fromCurrency, toCurrency, fromAmount, toAmount, false
         ];
 
         try {
@@ -53,7 +53,24 @@ class Transaction {
         }
     }
 
-    async query(name) {
+    async querySuccess(name) {
+        this._log('get', 'start', `Fetching transaction ID: ${name}`);
+        
+        const query = 'SELECT * FROM transactions WHERE (`from` = ? OR `to` = ?) AND status = 1';
+        const values = [name, name];
+    
+        try {
+            await this.connect();
+            const [rows] = await this.connection.execute(query, values);
+            this._log('get', 'success', `Transaction found`);
+            return rows.length ? rows : null; // Return all matching transactions
+        } catch (error) {
+            this._log('get', 'error', `Get failed: ${error.message}`);
+            return [];
+        }
+    }
+
+    async queryAll(name) {
         this._log('get', 'start', `Fetching transaction ID: ${name}`);
         const query = 'SELECT * FROM transactions WHERE `from` = ? OR `to` = ?';
         const values = [name, name];
@@ -63,6 +80,23 @@ class Transaction {
             const [rows] = await this.connection.execute(query, values);
             this._log('get', 'success', `Transaction found`);
             return rows.length ? rows : null; // Return all users
+        } catch (error) {
+            this._log('get', 'error', `Get failed: ${error.message}`);
+            return [];
+        }
+    }
+
+    async queryTransaction(postId) {
+        this._log('get', 'start', `Fetching transaction for postID: ${postId}`);
+        
+        const query = 'SELECT * FROM transactions WHERE post_id = ? AND status = 1';
+        const values = [postId];
+    
+        try {
+            await this.connect();
+            const [rows] = await this.connection.execute(query, values);
+            this._log('get', 'success', `Transaction found`);
+            return rows.length ? rows : null; // Return all matching transactions
         } catch (error) {
             this._log('get', 'error', `Get failed: ${error.message}`);
             return [];

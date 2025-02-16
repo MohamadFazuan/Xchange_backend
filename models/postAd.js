@@ -52,7 +52,7 @@ class PostAd {
     const query = `
       INSERT INTO post (
         from_currency, from_amount, to_currency, to_amount, name,
-        walletId, from_date, to_date, location, exchange_payment,
+        wallet_id, from_date, to_date, location, exchange_payment,
         tax_charges, service_fee, total
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
@@ -95,7 +95,7 @@ class PostAd {
             to_currency = ?,
             to_amount = ?,
             name = ?,
-            walletId = ?,
+            wallet_id = ?,
             from_date = ?,
             to_date = ?,
             location = ?,

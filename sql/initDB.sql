@@ -79,7 +79,7 @@ CREATE TABLE `post` (
   `to_currency` varchar(255) NOT NULL,
   `to_amount` decimal(20,2) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `walletId` varchar(255) NOT NULL,
+  `wallet_id` varchar(255) NOT NULL,
   `from_date` date NOT NULL,
   `to_date` date DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
@@ -124,7 +124,7 @@ CREATE TABLE `users` (
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
-  `walletId` varchar(100) DEFAULT NULL,
+  `wallet_id` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
